@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Treat Maker – Baker's Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #1A0E06;
+    --surface:   #251408;
+    --surface2:  #2E1A0C;
+    --surface3:  #3A2010;
+    --border:    rgba(200,134,42,0.2);
+    --border2:   rgba(200,134,42,0.12);
+    --caramel:   #C8862A;
+    --caramel-l: #E8A94A;
+    --caramel-d: #9B6620;
+    --blush:     #F2D4B8;
+    --text:      #F0E0CC;
+    --text-dim:  #9A7A62;
+    --text-muted:#5A3E2E;
+    --green:     #4CAF7D;
+    --green-bg:  rgba(76,175,125,0.12);
+    --red:       #E05252;
+    --red-bg:    rgba(224,82,82,0.12);
+    --blue:      #5BA4CF;
+    --blue-bg:   rgba(91,164,207,0.12);
+    --amber:     #E8A94A;
+    --amber-bg:  rgba(232,169,74,0.12);
+    --shadow:    rgba(0,0,0,0.4);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* TOP NAV */
+  .topnav {
+    background:var(--surface); border-bottom:1px solid var(--border2);
+    padding:0 32px; display:flex; align-items:center; justify-content:space-between;
+    height:64px; position:sticky; top:0; z-index:100;
+  }
+  .nav-brand { display:flex; align-items:center; gap:12px; }
+  .nav-brand-text { display:flex; flex-direction:column; }
+  .nav-brand-text span { font-family:'Playfair Display',serif; font-size:19px; color:var(--caramel-l); line-height:1.2; }
+  .nav-brand-text small { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); }
+  .nav-right { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .nav-pill { font-size:12px; padding:5px 12px; border-radius:40px; font-weight:500; }
+  .nav-pill.open   { background:var(--green-bg); color:var(--green); }
+  .nav-pill.closed { background:var(--red-bg);   color:var(--red); }
+  .nav-link {
+    background:transparent; border:1px solid var(--border);
+    color:var(--text-dim); padding:7px 14px; border-radius:8px;
+    cursor:pointer; font-size:12px; font-family:'DM Sans',sans-serif;
+    transition:all 0.2s; text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+  }
+  .nav-link:hover { border-color:var(--caramel-l); color:var(--caramel-l); }
+
+  /* MAIN */
+  .main { padding:32px; max-width:1200px; margin:0 auto; }
+
+  /* STATS */
+  .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; animation:fadeUp 0.4s ease both; }
+  .stat-card { background:var(--surface); border:1px solid var(--border2); border-radius:14px; padding:20px; }
+  .stat-label { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px; }
+  .stat-value { font-size:32px; font-weight:600; color:var(--caramel-l); line-height:1; margin-bottom:4px; }
+  .stat-sub { font-size:12px; color:var(--text-muted); }
+
+  /* CONTROL PANEL */
+  .control-panel {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:24px 28px; margin-bottom:28px;
+    display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+    animation:fadeUp 0.4s 0.1s ease both;
+  }
+  .control-left h3 { font-family:'Playfair Display',serif; font-size:19px; color:var(--blush); margin-bottom:4px; }
+  .control-left p  { font-size:13px; color:var(--text-dim); line-height:1.6; }
+  .toggle-wrap { display:flex; align-items:center; gap:14px; }
+  .toggle-label { font-size:15px; font-weight:600; }
+  .toggle-label.open-lbl   { color:var(--green); }
+  .toggle-label.closed-lbl { color:var(--red); }
+
+  /* TOGGLE SWITCH */
+  .switch { position:relative; width:64px; height:32px; cursor:pointer; flex-shrink:0; }
+  .switch input { display:none; }
+  .slider { position:absolute; inset:0; background:var(--surface3); border-radius:32px; transition:all 0.3s; border:1.5px solid var(--border); }
+  .slider::before { content:''; position:absolute; width:24px; height:24px; left:3px; top:3px; background:var(--text-dim); border-radius:50%; transition:all 0.3s; }
+  .switch input:checked + .slider { background:rgba(76,175,125,0.25); border-color:var(--green); }
+  .switch input:checked + .slider::before { transform:translateX(32px); background:var(--green); }
+
+  /* FILTERS */
+  .filters-row { display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; animation:fadeUp 0.4s 0.15s ease both; }
+  .filter-btn { padding:7px 16px; border-radius:40px; border:1px solid var(--border); background:transparent; color:var(--text-dim); font-family:'DM Sans',sans-serif; font-size:12px; cursor:pointer; transition:all 0.2s; }
+  .filter-btn.active { background:var(--caramel); border-color:var(--caramel); color:var(--bg); font-weight:600; }
+  .filter-btn:hover:not(.active) { border-color:var(--caramel); color:var(--caramel); }
+  .search-input { margin-left:auto; background:var(--surface); border:1px solid var(--border2); border-radius:8px; padding:7px 14px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; outline:none; width:220px; transition:border-color 0.2s; }
+  .search-input:focus { border-color:var(--caramel); }
+  .search-input::placeholder { color:var(--text-muted); }
+
+  /* ORDERS TABLE */
+  .orders-wrap { animation:fadeUp 0.4s 0.2s ease both; }
+  .orders-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .orders-title { font-size:13px; color:var(--text-dim); }
+  .export-btn { background:transparent; border:1px solid var(--border); color:var(--text-dim); padding:6px 14px; border-radius:8px; cursor:pointer; font-size:12px; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+  .export-btn:hover { border-color:var(--caramel); color:var(--caramel); }
+
+  .orders-table { background:var(--surface); border:1px solid var(--border2); border-radius:16px; overflow:hidden; }
+  .table-head {
+    display:grid; grid-template-columns:100px 1fr 120px 160px 120px 100px 110px 50px;
+    padding:12px 20px; background:var(--surface2); border-bottom:1px solid var(--border2);
+    font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); font-weight:500;
+  }
+  .order-row {
+    display:grid; grid-template-columns:100px 1fr 120px 160px 120px 100px 110px 50px;
+    padding:16px 20px; border-bottom:1px solid var(--border2); align-items:center; transition:background 0.15s;
+  }
+  .order-row:last-child { border-bottom:none; }
+  .order-row:hover { background:var(--surface2); }
+
+  .order-id   { font-size:11px; color:var(--caramel); font-weight:600; letter-spacing:0.5px; }
+  .order-name { font-size:14px; font-weight:500; color:var(--text); }
+  .order-phone, .order-location, .order-date { font-size:12px; color:var(--text-dim); }
+  .order-items { font-size:13px; color:var(--blush); }
+
+  /* STATUS BADGE */
+  .status-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:5px 11px; border-radius:20px; font-size:11px; font-weight:600;
+    cursor:pointer; transition:opacity 0.2s; white-space:nowrap; border:none;
+  }
+  .status-badge:hover { opacity:0.75; }
+  .status-badge.new      { background:var(--amber-bg); color:var(--amber); }
+  .status-badge.accepted { background:var(--blue-bg);  color:var(--blue); }
+  .status-badge.ready    { background:var(--green-bg); color:var(--green); }
+  .status-badge.done     { background:rgba(90,62,46,0.5); color:var(--text-muted); }
+
+  .delete-btn { background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:16px; padding:4px 8px; border-radius:6px; transition:all 0.2s; }
+  .delete-btn:hover { background:var(--red-bg); color:var(--red); }
+
+  /* EMPTY */
+  .empty-state { text-align:center; padding:60px 20px; color:var(--text-muted); }
+  .empty-state .icon { font-size:48px; margin-bottom:14px; opacity:0.4; }
+  .empty-state p { font-size:14px; }
+
+  /* STATUS CONTEXT MENU */
+  .status-menu { position:fixed; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:6px; z-index:1000; box-shadow:0 8px 30px var(--shadow); display:none; }
+  .status-menu.show { display:block; }
+  .status-menu button { display:block; width:100%; padding:9px 18px; background:transparent; border:none; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; border-radius:6px; text-align:left; transition:background 0.15s; }
+  .status-menu button:hover { background:var(--surface3); }
+
+  /* PRODUCTION SUMMARY */
+  .item-summary { background:var(--surface); border:1px solid var(--border2); border-radius:16px; padding:24px; margin-top:28px; animation:fadeUp 0.4s 0.25s ease both; }
+  .summary-title { font-family:'Playfair Display',serif; font-size:18px; color:var(--blush); margin-bottom:16px; }
+  .summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .summary-item { background:var(--surface2); border:1px solid var(--border2); border-radius:12px; padding:20px; text-align:center; }
+  .s-emoji { font-size:28px; margin-bottom:8px; }
+  .s-name  { font-size:12px; color:var(--text-dim); margin-bottom:4px; }
+  .s-qty   { font-size:30px; font-weight:600; color:var(--caramel-l); }
+  .s-sub   { font-size:11px; color:var(--text-muted); margin-top:4px; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+  @media(max-width:960px){
+    .stats-row{grid-template-columns:repeat(2,1fr);}
+    .table-head,.order-row{grid-template-columns:90px 1fr 120px 100px 50px;}
+    .table-head>*:nth-child(4),.order-row>*:nth-child(4),
+    .table-head>*:nth-child(5),.order-row>*:nth-child(5),
+    .table-head>*:nth-child(6),.order-row>*:nth-child(6){display:none;}
+    .summary-grid{grid-template-columns:repeat(2,1fr);}
+    .main{padding:20px 16px;}
+  }
+  @media(max-width:600px){
+    .topnav{padding:0 16px; height:auto; padding-top:12px; padding-bottom:12px; flex-wrap:wrap; gap:8px;}
+    .stats-row{grid-template-columns:1fr 1fr;}
+    .table-head,.order-row{grid-template-columns:1fr 1fr 100px 40px;}
+    .table-head>*:nth-child(1),.order-row>*:nth-child(1),
+    .table-head>*:nth-child(3),.order-row>*:nth-child(3){display:none;}
+    .control-panel{flex-direction:column; align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div class="nav-brand">
+    <span style="font-size:28px">🍭</span>
+    <div class="nav-brand-text">
+      <span>The Treat Maker</span>
+      <small>Baker's Dashboard</small>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-pill" id="nav-status-pill">● Orders Open</div>
+    <a href="treatmaker-order.html" class="nav-link">🛒 View Order Page</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Orders</div>
+      <div class="stat-value" id="stat-total">0</div>
+      <div class="stat-sub">all time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">New / Pending</div>
+      <div class="stat-value" id="stat-new" style="color:var(--amber)">0</div>
+      <div class="stat-sub">awaiting action</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Cake Pops to Make</div>
+      <div class="stat-value" id="stat-pops">0</div>
+      <div class="stat-sub">pending orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Cookies to Make</div>
+      <div class="stat-value" id="stat-cookies">0</div>
+      <div class="stat-sub">pending orders</div>
+    </div>
+  </div>
+
+  <!-- CONTROL PANEL -->
+  <div class="control-panel">
+    <div class="control-left">
+      <h3>Pre-Order Window</h3>
+      <p>Switch OFF to close the order form — customers will see a "closed" message and <strong>cannot submit new orders</strong>.<br>Switch ON to reopen and start receiving orders again.</p>
+    </div>
+    <div class="toggle-wrap">
+      <span class="toggle-label closed-lbl">Closed</span>
+      <label class="switch">
+        <input type="checkbox" id="order-toggle" onchange="toggleOrders(this.checked)">
+        <div class="slider"></div>
+      </label>
+      <span class="toggle-label open-lbl">Open</span>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters-row">
+    <button class="filter-btn active" onclick="setFilter('All',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('New',this)">🟡 New</button>
+    <button class="filter-btn" onclick="setFilter('Accepted',this)">🔵 Accepted</button>
+    <button class="filter-btn" onclick="setFilter('Ready',this)">🟢 Ready</button>
+    <button class="filter-btn" onclick="setFilter('Done',this)">⚫ Done</button>
+    <input class="search-input" type="text" id="search-input" placeholder="🔍  Search name or phone…" oninput="renderOrders()">
+  </div>
+
+  <!-- ORDERS TABLE -->
+  <div class="orders-wrap">
+    <div class="orders-header">
+      <span class="orders-title" id="orders-count-label">Loading…</span>
+      <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+    <div class="orders-table">
+      <div class="table-head">
+        <div>Order ID</div>
+        <div>Customer</div>
+        <div>Phone</div>
+        <div>Items Ordered</div>
+        <div>Delivery</div>
+        <div>Date</div>
+        <div>Status</div>
+        <div></div>
+      </div>
+      <div id="orders-list"></div>
+    </div>
+  </div>
+
+  <!-- PRODUCTION SUMMARY -->
+  <div class="item-summary">
+    <div class="summary-title">🧁 Production Summary — What to Bake</div>
+    <div class="summary-grid" id="prod-summary"></div>
+  </div>
+
+</div>
+
+<!-- STATUS DROPDOWN MENU -->
+<div class="status-menu" id="status-menu">
+  <button onclick="setStatus('New')">🟡  New</button>
+  <button onclick="setStatus('Accepted')">🔵  Accepted</button>
+  <button onclick="setStatus('Ready')">🟢  Ready</button>
+  <button onclick="setStatus('Done')">⚫  Done</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const ORDERS_KEY = 'treatmaker_orders';
+  const STATUS_KEY = 'treatmaker_open';
+
+  let currentFilter = 'All';
+  let activeOrderId = null;
+
+  // ── INIT — runs immediately, no login needed ───────────────────
+  async function init() {
+    // Load toggle state — default open if never set
+    const isOpen = localStorage.getItem(STATUS_KEY) !== 'false';
+    document.getElementById('order-toggle').checked = isOpen;
+    updateToggleUI(isOpen);
+    await renderOrders();
+    
+    // Realtime + periodic sync
+    if (typeof treatmakerSupabase !== 'undefined') {
+      treatmakerSupabase.subscribeToOrders(() => renderOrders());
+    }
+    
+    // Auto-refresh fallback
+    setInterval(renderOrders, 10000);
+  }
+  
+  // Load supabase.js then init
+  if (document.querySelector('script[src="./supabase.js"]')) {
+    init();
+  } else {
+    const script = document.createElement('script');
+    script.src = './supabase.js';
+    script.onload = init;
+    document.head.appendChild(script);
+  }
+
+  // ── TOGGLE ─────────────────────────────────────────────────────
+  function toggleOrders(isOpen) {
+    localStorage.setItem(STATUS_KEY, isOpen ? 'true' : 'false');
+    updateToggleUI(isOpen);
+  }
+
+  function updateToggleUI(isOpen) {
+    const pill = document.getElementById('nav-status-pill');
+    if (isOpen) {
+      pill.className   = 'nav-pill open';
+      pill.textContent = '● Orders Open';
+    } else {
+      pill.className   = 'nav-pill closed';
+      pill.textContent = '● Orders Closed';
+    }
+  }
+
+  // ── DATA (Supabase + localStorage fallback) ──────────────────
+  async function getOrders() { 
+    if (typeof treatmakerSupabase === 'undefined') {
+      console.warn('Supabase not loaded, using localStorage');
+      return JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    }
+    return await treatmakerSupabase.getOrders(); 
+  }
+  
+  async function saveOrders(orders) {
+    if (typeof treatmakerSupabase === 'undefined') {
+      localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+      return;
+    }
+    // Update all orders individually via Supabase
+    for (const order of orders) {
+      await treatmakerSupabase.updateOrder(order.id, order);
+    }
+  }
+
+  // ── FILTER ─────────────────────────────────────────────────────
+  async function setFilter(f, el) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    await renderOrders();
+  }
+
+  // ── RENDER ─────────────────────────────────────────────────────
+  async function renderOrders() {
+    const orders = await getOrders();
+    const search = (document.getElementById('search-input').value || '').toLowerCase();
+
+    let filtered = orders.filter(o => {
+      const matchFilter = currentFilter === 'All' || o.status === currentFilter;
+      const matchSearch = !search ||
+        (o.name  || '').toLowerCase().includes(search) ||
+        (o.phone || '').toLowerCase().includes(search) ||
+        (o.id    || '').toLowerCase().includes(search);
+      return matchFilter && matchSearch;
+    }).slice().reverse(); // newest first
+
+    // ── Stats ──
+    const active = orders.filter(o => o.status !== 'Done');
+    let pops=0, cookies=0;
+    active.forEach(o => o.items.forEach(i => {
+      if(i.name==='Cake Pops')      pops    += i.qty;
+      if(i.name==='Butter Cookies') cookies += i.qty;
+    }));
+    document.getElementById('stat-total').textContent   = orders.length;
+    document.getElementById('stat-new').textContent     = orders.filter(o=>o.status==='New').length;
+    document.getElementById('stat-pops').textContent    = pops;
+    document.getElementById('stat-cookies').textContent = cookies;
+
+    document.getElementById('orders-count-label').textContent =
+      `Showing ${filtered.length} order${filtered.length!==1?'s':''}` +
+      (currentFilter!=='All' ? ` · ${currentFilter}` : '');
+
+    // ── Order rows ──
+    const list = document.getElementById('orders-list');
+    if (filtered.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">🍪</div>
+          <p>${currentFilter!=='All' ? 'No orders with this status.' : 'No orders yet — share your order page to get started!'}</p>
+        </div>`;
+    } else {
+      list.innerHTML = filtered.map(o => {
+        const itemStr = (o.items||[]).map(i=>`${i.qty}× ${i.name}`).join(', ');
+        const dateStr = o.date
+          ? new Date(o.date+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+          : '—';
+        const st  = (o.status||'New');
+        const cls = st.toLowerCase();
+        const dot = {new:'🟡',accepted:'🔵',ready:'🟢',done:'⚫'}[cls]||'🟡';
+        const loc = o.delivery==='pickup' ? '🏃 Pickup' : '🚗 '+esc(o.location);
+
+        return `<div class="order-row">
+          <div class="order-id">${esc(o.id)}</div>
+          <div>
+            <div class="order-name">${esc(o.name)}</div>
+            ${o.notes ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">📝 ${esc(o.notes)}</div>` : ''}
+          </div>
+          <div class="order-phone">${esc(o.phone)}</div>
+          <div class="order-items">${esc(itemStr)}</div>
+          <div class="order-location">${loc}</div>
+          <div class="order-date">${dateStr}</div>
+          <div>
+            <span class="status-badge ${cls}" onclick="openStatusMenu(event,'${esc(o.id)}')">${dot} ${st}</span>
+          </div>
+          <div>
+            <button class="delete-btn" onclick="deleteOrder('${esc(o.id)}')" title="Delete order">🗑</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Production summary ──
+    let popsAll=0, cookiesAll=0, popsActive=0, cookiesActive=0;
+    orders.forEach(o => o.items.forEach(i => {
+      if(i.name==='Cake Pops')      { popsAll    +=i.qty; if(o.status!=='Done') popsActive    +=i.qty; }
+      if(i.name==='Butter Cookies') { cookiesAll +=i.qty; if(o.status!=='Done') cookiesActive +=i.qty; }
+    }));
+    document.getElementById('prod-summary').innerHTML = `
+      <div class="summary-item">
+        <div class="s-emoji">🍭</div>
+        <div class="s-name">Cake Pops</div>
+        <div class="s-qty">${popsActive}</div>
+        <div class="s-sub">still to bake (${popsAll} total ordered)</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-emoji">🍪</div>
+        <div class="s-name">Butter Cookies</div>
+        <div class="s-qty">${cookiesActive}</div>
+        <div class="s-sub">still to bake (${cookiesAll} total ordered)</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-emoji">📦</div>
+        <div class="s-name">Active Orders</div>
+        <div class="s-qty">${orders.filter(o=>o.status!=='Done').length}</div>
+        <div class="s-sub">out of ${orders.length} total</div>
+      </div>`;
+  }
+
+  // ── STATUS MENU ────────────────────────────────────────────────
+  function openStatusMenu(e, orderId) {
+    e.stopPropagation();
+    activeOrderId = orderId;
+    const menu = document.getElementById('status-menu');
+    const rect  = e.target.getBoundingClientRect();
+    menu.style.left = (rect.left) + 'px';
+    menu.style.top  = (rect.bottom + window.scrollY + 4) + 'px';
+    menu.classList.add('show');
+  }
+
+  async function setStatus(status) {
+    if(!activeOrderId) return;
+    
+    if (typeof treatmakerSupabase !== 'undefined') {
+      await treatmakerSupabase.updateOrder(activeOrderId, { status });
+    } else {
+      // Fallback
+      const orders = await getOrders();
+      const o = orders.find(x => x.id === activeOrderId);
+      if(o) o.status = status;
+      await saveOrders(orders);
+    }
+    
+    document.getElementById('status-menu').classList.remove('show');
+    activeOrderId = null;
+    renderOrders();
+  }
+
+  document.addEventListener('click', () => {
+    document.getElementById('status-menu').classList.remove('show');
+  });
+
+  // ── DELETE ─────────────────────────────────────────────────────
+  async function deleteOrder(id) {
+    if(!confirm('Delete this order? This cannot be undone.')) return;
+    
+    if (typeof treatmakerSupabase !== 'undefined') {
+      await treatmakerSupabase.deleteOrder(id);
+    } else {
+      // Fallback
+      const orders = await getOrders();
+      await saveOrders(orders.filter(o => o.id !== id));
+    }
+    renderOrders();
+  }
+
+  // ── EXPORT CSV ─────────────────────────────────────────────────
+  async function exportCSV() {
+    const orders = await getOrders();
+    if(!orders.length) { alert('No orders to export.'); return; }
+    const rows = [['Order ID','Placed At','Customer','Phone','Delivery','Location','Items','Notes','Status','Preferred Date']];
+    orders.forEach(o => rows.push([
+      o.id,
+      new Date(o.timestamp).toLocaleString(),
+      o.name, o.phone, o.delivery, o.location,
+      (o.items||[]).map(i=>i.qty+'x '+i.name).join(' | '),
+      o.notes||'', o.status, o.date
+    ]));
+    const csv  = rows.map(r => r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob = new Blob([csv],{type:'text/csv'});
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = 'treatmaker_orders_'+new Date().toISOString().split('T')[0]+'.csv';
+    a.click();
+  }
+
+  // ── ESCAPE HTML ────────────────────────────────────────────────
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>

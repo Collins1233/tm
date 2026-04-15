@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Treat Maker – Pre-Order</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FDF6EC;
+    --warm-white: #FFFAF4;
+    --caramel: #C8862A;
+    --caramel-light: #E8A94A;
+    --caramel-dark: #9B6620;
+    --chocolate: #3D1F0A;
+    --mocha: #6B3F1E;
+    --blush: #F2D4B8;
+    --text: #2C1810;
+    --text-light: #7A5C4A;
+    --border: #E8D4BC;
+    --shadow: rgba(61,31,10,0.12);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'DM Sans',sans-serif;
+    background:var(--cream);
+    color:var(--text);
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+  }
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(200,134,42,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(232,184,154,0.1) 0%, transparent 50%);
+  }
+  body::after {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:radial-gradient(circle, rgba(200,134,42,0.08) 1px, transparent 1px);
+    background-size:28px 28px;
+  }
+  .container { max-width:680px; margin:0 auto; padding:40px 24px 80px; position:relative; z-index:1; }
+
+  /* HEADER */
+  .header { text-align:center; margin-bottom:48px; animation:fadeDown 0.7s ease both; }
+  .logo-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--chocolate); color:var(--blush);
+    padding:6px 16px; border-radius:40px;
+    font-size:11px; letter-spacing:2.5px; text-transform:uppercase; font-weight:500; margin-bottom:20px;
+  }
+  .logo-badge::before,.logo-badge::after { content:'✦'; font-size:9px; color:var(--caramel-light); }
+  h1 { font-family:'Playfair Display',serif; font-size:clamp(36px,8vw,54px); color:var(--chocolate); line-height:1.1; margin-bottom:12px; }
+  h1 em { font-style:italic; color:var(--caramel); }
+  .tagline { color:var(--text-light); font-size:15px; font-weight:300; line-height:1.6; max-width:420px; margin:0 auto 24px; }
+  .divider { display:flex; align-items:center; gap:12px; justify-content:center; color:var(--caramel); font-size:18px; opacity:0.5; }
+  .divider::before,.divider::after { content:''; height:1px; width:60px; background:var(--caramel); opacity:0.4; }
+
+  /* CLOSED BANNER */
+  #closed-banner {
+    display:none;
+    background:linear-gradient(135deg,var(--chocolate),var(--mocha));
+    color:var(--blush); border-radius:20px; padding:52px 32px;
+    text-align:center; animation:fadeIn 0.5s ease both;
+    box-shadow:0 8px 40px var(--shadow);
+  }
+  #closed-banner .closed-icon { font-size:60px; margin-bottom:16px; }
+  #closed-banner h2 { font-family:'Playfair Display',serif; font-size:30px; margin-bottom:12px; color:var(--caramel-light); }
+  #closed-banner p { font-size:15px; opacity:0.85; line-height:1.7; max-width:380px; margin:0 auto; }
+  #closed-banner .closed-note {
+    display:inline-block; margin-top:24px;
+    background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
+    padding:10px 20px; border-radius:40px; font-size:13px; color:var(--caramel-light);
+  }
+
+  /* FORM CARD */
+  #order-form-wrap {
+    background:var(--warm-white); border:1px solid var(--border);
+    border-radius:24px; padding:40px 36px;
+    box-shadow:0 8px 40px var(--shadow),0 2px 8px rgba(200,134,42,0.08);
+    animation:fadeUp 0.7s 0.1s ease both;
+  }
+  .section-label {
+    display:flex; align-items:center; gap:10px;
+    font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--caramel); font-weight:500; margin-bottom:20px;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ITEMS */
+  .items-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:32px; }
+  .item-card {
+    border:2px solid var(--border); border-radius:16px; padding:20px 16px;
+    cursor:pointer; transition:all 0.25s ease; position:relative;
+    background:var(--cream); user-select:none;
+  }
+  .item-card:hover { border-color:var(--caramel-light); transform:translateY(-2px); box-shadow:0 6px 20px rgba(200,134,42,0.15); }
+  .item-card.selected { border-color:var(--caramel); background:linear-gradient(135deg,#FFF8EE,#FFF2DC); box-shadow:0 4px 16px rgba(200,134,42,0.2); }
+  .item-card .check {
+    position:absolute; top:10px; right:10px; width:22px; height:22px; border-radius:50%;
+    border:2px solid var(--border); background:white;
+    display:flex; align-items:center; justify-content:center;
+    transition:all 0.2s ease; font-size:11px; color:transparent;
+  }
+  .item-card.selected .check { background:var(--caramel); border-color:var(--caramel); color:white; }
+  .item-emoji { font-size:36px; display:block; margin-bottom:10px; }
+  .item-name { font-family:'Playfair Display',serif; font-size:17px; color:var(--chocolate); margin-bottom:4px; }
+  .item-desc { font-size:12px; color:var(--text-light); line-height:1.5; }
+  .item-price { margin-top:10px; font-weight:500; color:var(--caramel-dark); font-size:13px; }
+  .qty-row { display:none; align-items:center; gap:12px; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
+  .qty-row.visible { display:flex; }
+  .qty-label { font-size:13px; color:var(--text-light); flex:1; }
+  .qty-control { display:flex; align-items:center; border:1.5px solid var(--border); border-radius:40px; overflow:hidden; background:white; }
+  .qty-btn { width:32px; height:32px; border:none; background:transparent; cursor:pointer; font-size:18px; color:var(--caramel); display:flex; align-items:center; justify-content:center; }
+  .qty-btn:hover { background:#F2D4B8; }
+  .qty-num { width:36px; text-align:center; font-weight:500; font-size:15px; color:var(--chocolate); border:none; background:transparent; outline:none; }
+
+  /* FIELDS */
+  .fields-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .field-full { grid-column:1/-1; }
+  .field { display:flex; flex-direction:column; gap:6px; }
+  label { font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--text-light); font-weight:500; }
+  input,textarea {
+    font-family:'DM Sans',sans-serif; font-size:15px; color:var(--text);
+    background:var(--cream); border:1.5px solid var(--border); border-radius:10px;
+    padding:12px 14px; outline:none; transition:border-color 0.2s,box-shadow 0.2s; width:100%;
+  }
+  input:focus,textarea:focus { border-color:var(--caramel); box-shadow:0 0 0 3px rgba(200,134,42,0.12); background:white; }
+  textarea { resize:vertical; min-height:90px; }
+  .delivery-toggle { display:grid; grid-template-columns:1fr 1fr; border:1.5px solid var(--border); border-radius:10px; overflow:hidden; background:var(--cream); }
+  .delivery-option { padding:11px; text-align:center; cursor:pointer; font-size:14px; color:var(--text-light); transition:all 0.2s; user-select:none; }
+  .delivery-option.active { background:var(--caramel); color:white; font-weight:500; }
+  .error-msg { color:#C0392B; font-size:12px; margin-top:4px; display:none; }
+  .notice { background:linear-gradient(135deg,#FFF8EC,#FFF3E0); border:1px solid rgba(200,134,42,0.25); border-radius:12px; padding:14px 16px; font-size:13px; color:var(--mocha); line-height:1.6; margin-bottom:28px; }
+  .notice strong { color:var(--caramel-dark); }
+
+  .submit-btn {
+    width:100%; padding:16px 24px;
+    background:linear-gradient(135deg,var(--chocolate),var(--mocha));
+    color:var(--blush); border:none; border-radius:14px;
+    font-family:'DM Sans',sans-serif; font-size:16px; font-weight:500;
+    cursor:pointer; letter-spacing:0.5px; transition:all 0.25s ease;
+  }
+  .submit-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(61,31,10,0.3); }
+
+  /* SUCCESS */
+  #success-msg { display:none; text-align:center; padding:40px 20px; animation:bounceIn 0.5s ease both; }
+  #success-msg .success-icon { font-size:56px; margin-bottom:16px; }
+  #success-msg h2 { font-family:'Playfair Display',serif; font-size:28px; color:var(--chocolate); margin-bottom:10px; }
+  #success-msg p { color:var(--text-light); font-size:15px; line-height:1.7; }
+  #success-msg .ref { display:inline-block; margin-top:16px; background:#F2D4B8; padding:8px 18px; border-radius:40px; font-size:13px; font-weight:500; color:var(--caramel-dark); }
+
+  /* FOOTER */
+  .footer { text-align:center; margin-top:40px; font-size:12px; color:var(--text-light); opacity:0.6; }
+  .admin-link { display:inline-flex; align-items:center; gap:6px; color:var(--caramel-dark); text-decoration:none; font-size:12px; opacity:0.5; transition:opacity 0.2s; margin-top:12px; }
+  .admin-link:hover { opacity:1; }
+
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)}  to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn   { from{opacity:0} to{opacity:1} }
+  @keyframes bounceIn { 0%{opacity:0;transform:scale(0.85)} 60%{transform:scale(1.04)} 100%{opacity:1;transform:scale(1)} }
+
+  @media(max-width:520px){
+    #order-form-wrap{padding:28px 20px;}
+    .fields-grid,.items-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="logo-badge">Handcrafted with love</div>
+    <h1>The <em>Treat</em> Maker</h1>
+    <p class="tagline">Fresh-baked to order, made just for you. Place your pre-order and we'll have your treats ready.</p>
+    <div class="divider">🍪</div>
+  </div>
+
+  <!-- CLOSED — shown when baker turns orders off -->
+  <div id="closed-banner">
+    <div class="closed-icon">🔒</div>
+    <h2>Pre-orders are now closed!</h2>
+    <p>We're currently busy baking for existing orders and are not taking new ones at this time.</p>
+    <span class="closed-note">📱 Check back soon — we'll open again shortly!</span>
+  </div>
+
+  <!-- FORM — shown when orders are open -->
+  <div id="order-form-wrap">
+
+    <div class="section-label">Choose your treats</div>
+    <div class="items-grid" id="items-grid">
+
+      <div class="item-card" id="card-cakepops" onclick="toggleItem('cakepops')">
+        <div class="check">✓</div>
+        <span class="item-emoji">🍭</span>
+        <div class="item-name">Cake Pops</div>
+        <div class="item-desc">Moist cake on a stick, dipped in rich chocolate coating</div>
+        <div class="item-price">Available in packs</div>
+        <div class="qty-row" id="qty-cakepops">
+          <span class="qty-label">How many pops?</span>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(event,'cakepops',-1)">−</button>
+            <span class="qty-num" id="num-cakepops">1</span>
+            <button class="qty-btn" onclick="changeQty(event,'cakepops',1)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="item-card" id="card-cookies" onclick="toggleItem('cookies')">
+        <div class="check">✓</div>
+        <span class="item-emoji">🍪</span>
+        <div class="item-name">Butter Cookies</div>
+        <div class="item-desc">Classic melt-in-your-mouth butter cookies, golden & crumbly</div>
+        <div class="item-price">Available in packs</div>
+        <div class="qty-row" id="qty-cookies">
+          <span class="qty-label">How many cookies?</span>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(event,'cookies',-1)">−</button>
+            <span class="qty-num" id="num-cookies">1</span>
+            <button class="qty-btn" onclick="changeQty(event,'cookies',1)">+</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="section-label">Your details</div>
+    <div class="fields-grid">
+      <div class="field">
+        <label for="fname">Full Name</label>
+        <input type="text" id="fname" placeholder="e.g. Ama Boateng" autocomplete="name">
+        <span class="error-msg" id="err-name">Please enter your name</span>
+      </div>
+      <div class="field">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" placeholder="e.g. 0244 000 000" autocomplete="tel">
+        <span class="error-msg" id="err-phone">Please enter a phone number</span>
+      </div>
+      <div class="field field-full">
+        <label>Delivery or Pickup?</label>
+        <div class="delivery-toggle">
+          <div class="delivery-option active" id="opt-delivery" onclick="setDelivery('delivery')">🚗 Delivery</div>
+          <div class="delivery-option" id="opt-pickup" onclick="setDelivery('pickup')">🏃 Self Pickup</div>
+        </div>
+      </div>
+      <div class="field field-full" id="location-field">
+        <label for="location">Delivery Location / Area</label>
+        <input type="text" id="location" placeholder="e.g. East Legon, Accra">
+        <span class="error-msg" id="err-location">Please enter your delivery location</span>
+      </div>
+      <div class="field field-full">
+        <label for="date">Preferred Pickup / Delivery Day</label>
+        <input type="date" id="date">
+        <span class="error-msg" id="err-date">Please select a date</span>
+      </div>
+      <div class="field field-full">
+        <label for="notes">Special Requests <span style="font-size:10px;opacity:0.6">(optional)</span></label>
+        <textarea id="notes" placeholder="e.g. Birthday message, no nuts, specific flavours…"></textarea>
+      </div>
+    </div>
+
+    <div class="notice">
+      🕐 <strong>Please note:</strong> Orders are fulfilled on <strong>weekends or one designated day</strong> per week. You'll receive a confirmation once your order is received.
+    </div>
+
+    <div id="success-msg">
+      <div class="success-icon">🎉</div>
+      <h2>Order Received!</h2>
+      <p>Thank you! We'll be in touch soon to confirm your order.<br>Get ready for something delicious 🍭🍪</p>
+      <div class="ref" id="order-ref"></div>
+      <br><br>
+      <button onclick="resetForm()" style="background:var(--caramel);color:white;border:none;padding:10px 24px;border-radius:40px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;">Place Another Order</button>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitOrder()">
+      🍭 &nbsp;Place My Pre-Order
+    </button>
+
+  </div>
+
+  <div class="footer">
+    <p>Made with 🤎 by The Treat Maker</p>
+  </div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase.js"></script>
+<script>
+  const ORDERS_KEY = 'treatmaker_orders';
+  const STATUS_KEY = 'treatmaker_open';
+
+  const selected = { cakepops:false, cookies:false };
+  const qty      = { cakepops:1,     cookies:1 };
+  let deliveryType = 'delivery';
+
+  // ── Check & enforce open/closed state ─────────────────────────
+  async function checkStatus() {
+    const isOpen = localStorage.getItem(STATUS_KEY) !== 'false';
+    document.getElementById('order-form-wrap').style.display = isOpen ? 'block' : 'none';
+    document.getElementById('closed-banner').style.display   = isOpen ? 'none'  : 'block';
+    return isOpen;
+  }
+
+  // Listen for storage changes from the admin tab / page
+  // so if baker closes orders while a customer has the page open,
+  // the form disappears immediately without needing a page refresh.
+  window.addEventListener('storage', function(e) {
+    if (e.key === STATUS_KEY) checkStatus();
+  });
+
+  function toggleItem(id) {
+    selected[id] = !selected[id];
+    document.getElementById('card-'+id).classList.toggle('selected', selected[id]);
+    document.getElementById('qty-'+id).classList.toggle('visible',  selected[id]);
+  }
+
+  function changeQty(e, id, delta) {
+    e.stopPropagation();
+    qty[id] = Math.max(1, qty[id] + delta);
+    document.getElementById('num-'+id).textContent = qty[id];
+  }
+
+  function setDelivery(type) {
+    deliveryType = type;
+    document.getElementById('opt-delivery').classList.toggle('active', type==='delivery');
+    document.getElementById('opt-pickup').classList.toggle('active',   type==='pickup');
+    document.getElementById('location-field').style.display = type==='delivery' ? 'flex' : 'none';
+  }
+
+  function clearErrors() {
+    document.querySelectorAll('.error-msg').forEach(e => e.style.display='none');
+    document.querySelectorAll('input,textarea').forEach(e => e.style.borderColor='');
+  }
+
+  function showError(fieldId, errId) {
+    const f = document.getElementById(fieldId);
+    const e = document.getElementById(errId);
+    if(f) f.style.borderColor='#C0392B';
+    if(e) e.style.display='block';
+  }
+
+  async function submitOrder() {
+    // Always re-read storage at the exact moment of submission
+    // so a closed store cannot receive any order regardless of UI state
+    if (!await checkStatus()) return;
+
+    clearErrors();
+    let valid = true;
+
+    if(!selected.cakepops && !selected.cookies) {
+      const g = document.getElementById('items-grid');
+      g.style.outline='2px solid #C0392B'; g.style.borderRadius='16px';
+      setTimeout(()=>{ g.style.outline=''; }, 2000);
+      valid = false;
+    }
+
+    const name     = document.getElementById('fname').value.trim();
+    const phone    = document.getElementById('phone').value.trim();
+    const location = document.getElementById('location').value.trim();
+    const date     = document.getElementById('date').value;
+    const notes    = document.getElementById('notes').value.trim();
+
+    if(!name)  { showError('fname',    'err-name');     valid=false; }
+    if(!phone) { showError('phone',    'err-phone');    valid=false; }
+    if(deliveryType==='delivery' && !location) { showError('location','err-location'); valid=false; }
+    if(!date)  { showError('date',     'err-date');     valid=false; }
+
+    if(!valid) return;
+
+    const order = {
+      id:       'TM-' + Date.now().toString(36).toUpperCase(),
+      timestamp: new Date().toISOString(),
+      name, phone,
+      delivery:  deliveryType,
+      location:  deliveryType==='pickup' ? 'Self Pickup' : location,
+      date, notes, items:[], status:'New'
+    };
+    if(selected.cakepops) order.items.push({ name:'Cake Pops',      qty:qty.cakepops });
+    if(selected.cookies)  order.items.push({ name:'Butter Cookies', qty:qty.cookies  });
+
+    // Fallback local save first
+    const existing = JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]');
+    existing.push(order);
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(existing));
+    
+    // Try Supabase
+    if (typeof treatmakerSupabase !== 'undefined') {
+      const supabaseSuccess = await treatmakerSupabase.saveOrder(order);
+      if (!supabaseSuccess) {
+        console.warn('Supabase unavailable, saved to localStorage only');
+      }
+    } else {
+      console.warn('Supabase not loaded, saved to localStorage only');
+    }
+
+    // Show success
+    document.getElementById('submit-btn').style.display = 'none';
+    document.querySelectorAll('#order-form-wrap .section-label').forEach(e=>e.style.display='none');
+    document.getElementById('items-grid').style.display  = 'none';
+    document.querySelector('.fields-grid').style.display = 'none';
+    document.querySelector('.notice').style.display      = 'none';
+    document.getElementById('success-msg').style.display = 'block';
+    document.getElementById('order-ref').textContent = 'Order ID: ' + order.id;
+  }
+
+  function resetForm() {
+    selected.cakepops=false; selected.cookies=false;
+    qty.cakepops=1; qty.cookies=1;
+    ['cakepops','cookies'].forEach(id=>{
+      document.getElementById('card-'+id).classList.remove('selected');
+      document.getElementById('qty-'+id).classList.remove('visible');
+      document.getElementById('num-'+id).textContent=1;
+    });
+    ['fname','phone','location','date','notes'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value='';
+    });
+    setDelivery('delivery');
+    document.getElementById('submit-btn').style.display='';
+    document.getElementById('success-msg').style.display='none';
+    document.querySelectorAll('#order-form-wrap .section-label').forEach(e=>e.style.display='');
+    document.getElementById('items-grid').style.display='';
+    document.querySelector('.fields-grid').style.display='';
+    document.querySelector('.notice').style.display='';
+  }
+
+  document.getElementById('date').min = new Date().toISOString().split('T')[0];
+  checkStatus();
+</script>
+</body>
+</html>
